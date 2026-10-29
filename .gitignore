@@ -7,4 +7,9 @@ Tweaks/uYou/*
 !Tweaks/uYou/*.deb
 Resources/
 *.ipa
+Payload/
+*.p12
+*.pfx
+*.mobileprovision
+.env
 .vscode
