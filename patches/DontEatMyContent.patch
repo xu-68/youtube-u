@@ -1,0 +1,36 @@
+diff --git a/Tweak.x b/Tweak.x
+index 683ad97..5a90436 100644
+--- a/Tweak.x
++++ b/Tweak.x
+@@ -1,4 +1,5 @@
+ #import "Tweak.h"
++#import "../RuntimeCompatibility.h"
+ 
+ static CGFloat videoAspectRatio = 16/9;
+ static BOOL isZoomedToFill = NO;
+@@ -14,8 +15,16 @@ static void DEMC_centerRenderingView();
+ %hook YTPlayerViewController
+ - (void)viewDidAppear:(BOOL)animated {
+     YTPlayerView *playerView = [self playerView];
+-    UIView *renderingViewContainer = [playerView valueForKey:@"_renderingViewContainer"];
+-    renderingView = [playerView renderingView];
++    UIView *renderingViewContainer = UYOptionalValueForKey(playerView, @"_renderingViewContainer");
++    renderingView = [playerView respondsToSelector:@selector(renderingView)] ? [playerView renderingView] : nil;
++    if (![renderingViewContainer isKindOfClass:[UIView class]] ||
++        ![renderingView isKindOfClass:[UIView class]] ||
++        ![renderingView isDescendantOfView:renderingViewContainer]) {
++        DEMC_deactivateConstraints();
++        widthConstraint = heightConstraint = centerXConstraint = centerYConstraint = nil;
++        %orig;
++        return;
++    }
+     if (IS_ENABLED(kDisableAmbientMode)) {
+         playerView.backgroundColor = [UIColor blackColor];;
+         renderingViewContainer.backgroundColor = [UIColor blackColor];
+@@ -226,4 +235,4 @@ NSBundle *DEMC_getTweakBundle() {
+             bundle = [NSBundle bundleWithPath:ROOT_PATH_NS(@"/Library/Application Support/DontEatMyContent.bundle")];
+     });
+     return bundle;
+-}
+\ No newline at end of file
++}
