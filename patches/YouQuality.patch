@@ -1,0 +1,33 @@
+diff --git a/Tweak.x b/Tweak.x
+index a8cd406..3f64573 100644
+--- a/Tweak.x
++++ b/Tweak.x
+@@ -1,5 +1,6 @@
+ #import "../YTVideoOverlay/Header.h"
+ #import "../YTVideoOverlay/Init.x"
++#import "../RuntimeCompatibility.h"
+ #import <YouTubeHeader/YTMainAppVideoPlayerOverlayViewController.h>
+ 
+ #define TweakKey @"YouQuality"
+@@ -94,8 +95,8 @@ NSString *getCompactQualityLabel(MLFormat *format) {
+ 
+ %new(v@:@)
+ - (void)didPressYouQuality:(id)arg {
+-    YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
+-    [c didPressVideoQuality:arg];
++    YTMainAppVideoPlayerOverlayViewController *c = UYOptionalValueForKey(self, @"_eventsDelegate");
++    if ([c respondsToSelector:@selector(didPressVideoQuality:)]) [c didPressVideoQuality:arg];
+     [self updateYouQualityButton:nil];
+ }
+ 
+@@ -127,8 +128,8 @@ NSString *getCompactQualityLabel(MLFormat *format) {
+ 
+ %new(v@:@)
+ - (void)didPressYouQuality:(id)arg {
+-    YTMainAppVideoPlayerOverlayViewController *c = [self.delegate valueForKey:@"_delegate"];
+-    [c didPressVideoQuality:arg];
++    YTMainAppVideoPlayerOverlayViewController *c = UYOptionalValueForKey(self.delegate, @"_delegate");
++    if ([c respondsToSelector:@selector(didPressVideoQuality:)]) [c didPressVideoQuality:arg];
+     [self updateYouQualityButton:nil];
+ }
+ 
