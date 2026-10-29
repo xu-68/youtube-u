@@ -27,6 +27,7 @@ jobs:
       - name: Apply compatibility fixes
         run: sh main/scripts/apply-compat-patches.sh
       - name: Run actual renderer in an iPhone simulator
+        timeout-minutes: 8
         run: bash main/scripts/run-simulator-regression.sh
       - name: Install build dependencies
         run: |

@@ -31,16 +31,23 @@ print(phones[0]['udid'])
 PY
 )
 xcrun simctl boot "$device" || true
-xcrun simctl bootstatus "$device" -b
+python3 - "$device" <<'PY'
+import subprocess, sys
+subprocess.run(['xcrun', 'simctl', 'bootstatus', sys.argv[1], '-b'], check=True, timeout=240)
+PY
 xcrun simctl install "$device" "$output_dir/MarkerRegression.app"
-xcrun simctl launch --console "$device" local.uyou.marker-regression
+xcrun simctl launch "$device" local.uyou.marker-regression
 container=$(xcrun simctl get_app_container "$device" local.uyou.marker-regression data)
+for attempt in {1..30}; do
+    if test -f "$container/Documents/results.json"; then break; fi
+    sleep 1
+done
 test -f "$container/Documents/results.json"
 cp "$container/Documents/results.json" "$output_dir/results.json"
 python3 - "$output_dir/results.json" <<'PY'
 import json, sys
 report = json.load(open(sys.argv[1]))
 print(json.dumps(report, indent=2))
-if report['failed'] or report['total'] < 18:
+if report['failed'] or report['total'] < 21:
     raise SystemExit('Simulator regression failed')
 PY
