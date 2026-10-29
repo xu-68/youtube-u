@@ -1,3 +1,19 @@
+# Experimental YouTube 21.43.5 build
+
+This repository prepares an unsigned uYouPlus IPA from a user-supplied decrypted
+YouTube 21.43.5 input. It is based on the archived qnblackcat/uYouPlus project.
+Runtime compatibility with YouTube 21.x is not yet verified. Build instructions
+and current limitations are in [BUILD-NOTES.md](BUILD-NOTES.md).
+
+Builds run on the public repository's standard GitHub Actions runner. The separate
+private repository only stores the input IPA and does not run Actions. No signing
+certificate is uploaded. Third-party components retain their upstream licensing;
+uYou itself is a precompiled closed-source dependency.
+
+---
+
+# Original upstream README
+
 # ✈️ uYouPlus is now archived ✈️
 
 
