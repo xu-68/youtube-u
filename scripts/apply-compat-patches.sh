@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-for plugin in iSponsorBlock DontEatMyContent YTVideoOverlay YouQuality YouSpeed; do
+for plugin in iSponsorBlock DontEatMyContent YTVideoOverlay YouQuality YouSpeed Return-YouTube-Dislikes; do
     plugin_dir="$project_dir/Tweaks/$plugin"
     patch_file="$project_dir/patches/$plugin.patch"
     if git -C "$plugin_dir" apply --reverse --check "$patch_file" 2>/dev/null; then

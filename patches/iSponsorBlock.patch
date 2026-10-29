@@ -1,8 +1,37 @@
 diff --git a/iSponsorBlock.xm b/iSponsorBlock.xm
-index c6f0779..487a6ee 100644
+index c6f0779..f2d30bc 100644
 --- a/iSponsorBlock.xm
 +++ b/iSponsorBlock.xm
-@@ -540,14 +540,31 @@ void currentVideoTimeDidChange(YTPlayerViewController *self, YTSingleVideoTime *
+@@ -1,4 +1,5 @@
+ #import "Headers/iSponsorBlock.h"
++#import "../RuntimeCompatibility.h"
+ #import <AudioToolbox/AudioToolbox.h>
+ #import <rootless.h>
+ #import "Headers/ColorFunctions.h"
+@@ -360,8 +361,10 @@ void currentVideoTimeDidChange(YTPlayerViewController *self, YTSingleVideoTime *
+ 
+ - (void)updateTopRightButtonAvailability {
+     %orig;
++    if (![self respondsToSelector:@selector(videoPlayerOverlayView)]) return;
+     YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
+-    YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
++    YTMainAppControlsOverlayView *c = UYOptionalValueForKey(v, @"_controlsOverlayView");
++    if (![c respondsToSelector:@selector(sponsorBlockButton)]) return;
+     c.sponsorBlockButton.hidden = !kShowButtonsInPlayer;
+     c.sponsorStartedEndedButton.hidden = !kShowButtonsInPlayer || kHideStartEndButtonInPlayer;
+     [c setNeedsLayout];
+@@ -412,8 +415,8 @@ void currentVideoTimeDidChange(YTPlayerViewController *self, YTSingleVideoTime *
+ - (NSMutableArray *)topControls {
+     NSMutableArray <UIView *> *topControls = %orig;
+     if (kShowButtonsInPlayer) {
+-        [topControls insertObject:self.sponsorBlockButton atIndex:0];
+-        if (!kHideStartEndButtonInPlayer) {
++        if (self.sponsorBlockButton) [topControls insertObject:self.sponsorBlockButton atIndex:0];
++        if (!kHideStartEndButtonInPlayer && self.sponsorStartedEndedButton) {
+             [topControls insertObject:self.sponsorStartedEndedButton atIndex:0];
+         }
+     }
+@@ -540,14 +543,31 @@ void currentVideoTimeDidChange(YTPlayerViewController *self, YTSingleVideoTime *
  
  static void setSkipSegments(YTModularPlayerBarView *self, NSMutableArray <SponsorSegment *> *arg1) {
      [self removeSponsorMarkers];
@@ -37,7 +66,7 @@ index c6f0779..487a6ee 100644
      @try {
          referenceView = [[self valueForKey:@"_segmentViews"] firstObject];
      } @catch (id ex) {
-@@ -566,7 +583,7 @@ static void setSkipSegments(YTModularPlayerBarView *self, NSMutableArray <Sponso
+@@ -566,7 +586,7 @@ static void setSkipSegments(YTModularPlayerBarView *self, NSMutableArray <Sponso
              totalTime = model.playingState.totalTimeSec;
          } @catch (id ex) {}
      }
@@ -46,7 +75,7 @@ index c6f0779..487a6ee 100644
      CGFloat originY = referenceView.frame.origin.y;
      for (SponsorSegment *segment in arg1) {
          CGFloat startTime = segment.startTime;
-@@ -584,8 +601,8 @@ static void setSkipSegments(YTModularPlayerBarView *self, NSMutableArray <Sponso
+@@ -584,8 +604,8 @@ static void setSkipSegments(YTModularPlayerBarView *self, NSMutableArray <Sponso
          else if ([segment.category isEqualToString:@"music_offtopic"]) color = colorWithHexString([kCategorySettings objectForKey:@"music_offtopicColor"]);
          else if ([segment.category isEqualToString:@"preview"]) color = colorWithHexString([kCategorySettings objectForKey:@"previewColor"]);
  

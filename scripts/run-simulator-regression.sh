@@ -7,7 +7,7 @@ python3 "$project_dir/scripts/generate-simulator-regression.py" "$output_dir/mai
 sdk=$(xcrun --sdk iphonesimulator --show-sdk-path)
 xcrun --sdk iphonesimulator clang++ -fobjc-arc -std=c++17 \
     -target "$(uname -m)-apple-ios17.0-simulator" -isysroot "$sdk" \
-    -I"$project_dir/Tweaks" -framework UIKit -framework Foundation \
+    -I"$project_dir/Tweaks" -framework UIKit -framework Foundation -framework CoreGraphics \
     "$output_dir/main.mm" -o "$output_dir/MarkerRegression.app/MarkerRegression"
 python3 - "$output_dir/MarkerRegression.app/Info.plist" <<'PY'
 import plistlib, sys

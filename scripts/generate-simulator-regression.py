@@ -15,4 +15,12 @@ def renderer(source, name):
 
 fixture = (root / 'tests/MarkerRegression.mm').read_text()
 fixture = fixture.replace('// INSERT_ACTUAL_RENDERERS', renderer(original, 'baselineRenderer') + '\n' + renderer(patched, 'patchedRenderer'))
+overlay = root / 'Tweaks/YTVideoOverlay'
+original_overlay = subprocess.check_output(['git', '-C', str(overlay), 'show', 'HEAD:Tweak.x'], text=True)
+patched_overlay = (overlay / 'Tweak.x').read_text()
+def controls(source, name):
+    start = source.index('static NSMutableArray *topControls(')
+    end = source.index('\nstatic void setDefaultTextStyle(', start)
+    return source[start:end].replace('topControls(', name + '(', 1)
+fixture = fixture.replace('// INSERT_ACTUAL_CONTROLS', controls(original_overlay, 'baselineTopControls') + '\n' + controls(patched_overlay, 'patchedTopControls'))
 pathlib.Path(sys.argv[1]).write_text(fixture)

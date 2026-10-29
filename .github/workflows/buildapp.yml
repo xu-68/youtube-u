@@ -23,6 +23,9 @@ jobs:
           submodules: recursive
           persist-credentials: false
 
+      - name: Apply plugin compatibility fixes
+        run: sh main/scripts/apply-compat-patches.sh
+
       - name: Install build dependencies
         run: |
           brew install ldid dpkg make

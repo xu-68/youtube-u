@@ -60,6 +60,19 @@ static NSDictionary *kCategorySettings;
 static UIColor *colorWithHexString(NSString *hex) { return UIColor.redColor; }
 // INSERT_ACTUAL_RENDERERS
 
+@interface YTQTMButton : UIButton
+@end
+@implementation YTQTMButton
+@end
+@interface YTMainAppControlsOverlayView : UIView
+@property(strong) NSMutableDictionary *overlayButtons;
+@end
+@implementation YTMainAppControlsOverlayView
+@end
+static NSMutableArray *topButtons;
+static BOOL UseTopButton(NSString *name) { return YES; }
+// INSERT_ACTUAL_CONTROLS
+
 static SponsorSegment *segment(CGFloat start, CGFloat end) {
     SponsorSegment *s = [SponsorSegment new];
     s.startTime = start; s.endTime = end; s.category = @"sponsor";
@@ -97,6 +110,26 @@ int main(int argc, char **argv) {
             }
         };
         NSMutableArray *segments = [NSMutableArray arrayWithObject:segment(10, 30)];
+        topButtons = [NSMutableArray arrayWithObject:@"fixture-button"];
+        test(@"baseline overlay reproduces nil button exception", ^{
+            YTMainAppControlsOverlayView *view = [YTMainAppControlsOverlayView new];
+            view.overlayButtons = [NSMutableDictionary dictionary];
+            BOOL reproduced = NO;
+            @try { baselineTopControls(view, [NSMutableArray array]); }
+            @catch (NSException *e) { reproduced = [e.name isEqualToString:NSInvalidArgumentException]; }
+            check(reproduced, @"Baseline should expose missing button failure");
+        });
+        test(@"overlay omits missing button", ^{
+            YTMainAppControlsOverlayView *view = [YTMainAppControlsOverlayView new];
+            view.overlayButtons = [NSMutableDictionary dictionary];
+            check(patchedTopControls(view, [NSMutableArray array]).count == 0, @"Missing button must be omitted");
+        });
+        test(@"overlay preserves existing buttons", ^{
+            YTMainAppControlsOverlayView *view = [YTMainAppControlsOverlayView new];
+            YTQTMButton *button = [YTQTMButton new];
+            view.overlayButtons = [@{@"fixture-button": button} mutableCopy];
+            check(patchedTopControls(view, [NSMutableArray array]).firstObject == button, @"Existing button lost");
+        });
         test(@"baseline reproduces undefined-key exception", ^{
             YTModularPlayerBarView *v = bar(); [v.fixtureValues removeObjectForKey:@"_accessibilityDelegate"];
             BOOL reproduced = NO;

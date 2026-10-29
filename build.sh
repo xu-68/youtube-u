@@ -1,6 +1,8 @@
 #!/bin/bash
 # To build, either place the IPA file in the project's root directory, or get the path to the IPA, then run `./build.sh`
 
+sh "$(dirname "$0")/scripts/apply-compat-patches.sh" || exit 1
+
 read -p $'\e[34m==> \e[1;39mPath to the decrypted YouTube.ipa or YouTube.app. If nothing is provided, any ipa/app in the project\'s root directory will be used: ' PATHTOYT
 
 # Check if PATHTOYT is empty

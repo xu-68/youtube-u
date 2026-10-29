@@ -1,0 +1,47 @@
+diff --git a/Tweak.x b/Tweak.x
+index aa55489..19b55ab 100644
+--- a/Tweak.x
++++ b/Tweak.x
+@@ -6,6 +6,7 @@
+ #import "Tweak.h"
+ #import "TweakSettings.h"
+ #import "Vote.h"
++#import "../RuntimeCompatibility.h"
+ 
+ static NSCache <NSString *, NSDictionary *> *cache;
+ 
+@@ -208,20 +209,15 @@ __strong NSMutableAttributedString *mutableDislikeText = nil;
+ static NSString *getVideoId(ASDisplayNode *containerNode) {
+     UIViewController *vc = [containerNode closestViewController];
+     if (![vc isKindOfClass:%c(YTWatchNextResultsViewController)]) return nil;
+-    YTPlayerViewController *pvc;
+-    NSObject *wc;
+-    @try {
+-        wc = [vc valueForKey:@"_metadataPanelStateProvider"];
+-    } @catch (id ex) {
+-        wc = [vc valueForKey:@"_ngwMetadataPanelStateProvider"];
+-    }
+-    @try {
++    id wc = UYOptionalValueForKey(vc, @"_metadataPanelStateProvider") ?:
++        UYOptionalValueForKey(vc, @"_ngwMetadataPanelStateProvider");
++    YTPlayerViewController *pvc = nil;
++    if ([wc respondsToSelector:@selector(watchPlaybackController)]) {
+         YTWatchPlaybackController *wpc = ((YTWatchController *)wc).watchPlaybackController;
+-        pvc = [wpc valueForKey:@"_playerViewController"];
+-    } @catch (id ex) {
+-        pvc = [wc valueForKey:@"_playerViewController"];
++        pvc = UYOptionalValueForKey(wpc, @"_playerViewController");
+     }
+-    return [pvc contentVideoID];
++    if (!pvc) pvc = UYOptionalValueForKey(wc, @"_playerViewController");
++    return [pvc respondsToSelector:@selector(contentVideoID)] ? [pvc contentVideoID] : nil;
+ }
+ 
+ static void getVoteAndModifyButtons(
+@@ -567,4 +563,4 @@ static void setTextNodeColor(ELMTextNode *node, UIColor *color) {
+     }
+     [[NSBundle bundleWithPath:[NSString stringWithFormat:@"%@/Frameworks/Module_Framework.framework", NSBundle.mainBundle.bundlePath]] load];
+     %init;
+-}
+\ No newline at end of file
++}
