@@ -1,0 +1,45 @@
+diff --git a/Tweak.x b/Tweak.x
+index c21d0f5..d6b1055 100644
+--- a/Tweak.x
++++ b/Tweak.x
+@@ -9,6 +9,7 @@
+ #import <YouTubeHeader/YTTypeStyle.h>
+ #import "Header.h"
+ #import "Init.h"
++#import "../RuntimeCompatibility.h"
+ 
+ static const NSInteger YTVideoOverlaySection = 1222;
+ 
+@@ -55,8 +56,9 @@ static BOOL UseBottomButton(NSString *name) {
+ 
+ static NSMutableArray *topControls(YTMainAppControlsOverlayView *self, NSMutableArray *controls) {
+     for (NSString *name in topButtons) {
+-        if (UseTopButton(name))
+-            [controls insertObject:self.overlayButtons[name] atIndex:0];
++        YTQTMButton *button = self.overlayButtons[name];
++        if (UseTopButton(name) && button)
++            [controls insertObject:button atIndex:0];
+     }
+     return controls;
+ }
+@@ -131,8 +133,10 @@ static YTQTMButton *createButtonBottom(BOOL isText, YTInlinePlayerBarContainerVi
+ 
+ - (void)updateTopRightButtonAvailability {
+     %orig;
++    if (![self respondsToSelector:@selector(videoPlayerOverlayView)]) return;
+     YTMainAppVideoPlayerOverlayView *v = [self videoPlayerOverlayView];
+-    YTMainAppControlsOverlayView *c = [v valueForKey:@"_controlsOverlayView"];
++    YTMainAppControlsOverlayView *c = UYOptionalValueForKey(v, @"_controlsOverlayView");
++    if (![c respondsToSelector:@selector(overlayButtons)]) return;
+     for (NSString *name in topButtons)
+         c.overlayButtons[name].hidden = !UseTopButton(name);
+     [c setNeedsLayout];
+@@ -152,7 +156,7 @@ static NSMutableDictionary <NSString *, YTQTMButton *> *createOverlayButtons(BOO
+             button = createButtonTop(asText, (YTMainAppControlsOverlayView *)self, name, accessibilityLabel, selector);
+         else
+             button = createButtonBottom(asText, (YTInlinePlayerBarContainerView *)self, name, accessibilityLabel, selector);
+-        overlayButtons[name] = button;
++        if (button) overlayButtons[name] = button;
+     }
+     return overlayButtons;
+ }
