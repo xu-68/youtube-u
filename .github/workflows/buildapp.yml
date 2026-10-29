@@ -62,7 +62,8 @@ jobs:
           test -n "$INPUT_REPO" || { echo 'Configure INPUT_REPO'; exit 1; }
           mkdir -p "$RUNNER_TEMP/ipa-input"
           gh release download youtube-input --repo "$INPUT_REPO" --pattern youtube.ipa --dir "$RUNNER_TEMP/ipa-input"
-          python3 main/scripts/inspect_ipa.py "$RUNNER_TEMP/ipa-input/youtube.ipa" --input --extract main
+          python3 main/scripts/inspect_ipa.py "$RUNNER_TEMP/ipa-input/youtube.ipa" --input
+          unzip -q "$RUNNER_TEMP/ipa-input/youtube.ipa" -d main
 
       - name: Compile and inject
         working-directory: main
