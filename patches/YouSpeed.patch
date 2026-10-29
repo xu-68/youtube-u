@@ -1,0 +1,33 @@
+diff --git a/Tweak.x b/Tweak.x
+index e2d79c1..407d48c 100644
+--- a/Tweak.x
++++ b/Tweak.x
+@@ -1,5 +1,6 @@
+ #import "../YTVideoOverlay/Header.h"
+ #import "../YTVideoOverlay/Init.x"
++#import "../RuntimeCompatibility.h"
+ #import <YouTubeHeader/ASNodeController.h>
+ #import <YouTubeHeader/ELMTouchCommandPropertiesHandler.h>
+ // #import <YouTubeHeader/MLAVPlayer.h>
+@@ -99,8 +100,8 @@ static void didSelectRate(float rate) {
+ 
+ %new(v@:@)
+ - (void)didPressYouSpeed:(id)arg {
+-    YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
+-    [c didPressVarispeed:arg];
++    YTMainAppVideoPlayerOverlayViewController *c = UYOptionalValueForKey(self, @"_eventsDelegate");
++    if ([c respondsToSelector:@selector(didPressVarispeed:)]) [c didPressVarispeed:arg];
+     [self updateYouSpeedButton:nil];
+ }
+ 
+@@ -131,8 +132,8 @@ static void didSelectRate(float rate) {
+ 
+ %new(v@:@)
+ - (void)didPressYouSpeed:(id)arg {
+-    YTMainAppVideoPlayerOverlayViewController *c = [self.delegate valueForKey:@"_delegate"];
+-    [c didPressVarispeed:arg];
++    YTMainAppVideoPlayerOverlayViewController *c = UYOptionalValueForKey(self.delegate, @"_delegate");
++    if ([c respondsToSelector:@selector(didPressVarispeed:)]) [c didPressVarispeed:arg];
+     [self updateYouSpeedButton:nil];
+ }
+ 
