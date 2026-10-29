@@ -1,0 +1,75 @@
+name: Compile plugins and run UIKit simulator regression
+
+on:
+  push:
+    branches: [fix/video-detail-crash]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression-and-build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      THEOS: ${{ github.workspace }}/theos
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          submodules: recursive
+          persist-credentials: false
+      - name: Apply compatibility fixes
+        run: sh main/scripts/apply-compat-patches.sh
+      - name: Run actual renderer in an iPhone simulator
+        run: bash main/scripts/run-simulator-regression.sh
+      - name: Install build dependencies
+        run: |
+          brew install ldid dpkg make
+          echo "$(brew --prefix make)/libexec/gnubin" >> "$GITHUB_PATH"
+      - uses: actions/checkout@v4
+        with:
+          repository: theos/theos
+          path: theos
+          submodules: recursive
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: qnblackcat/theos-jailed
+          path: theos-jailed
+          submodules: recursive
+          persist-credentials: false
+      - name: Install SDK and Theos Jailed
+        run: |
+          git clone --depth=1 --filter=blob:none --sparse https://github.com/theos/sdks.git sdk-download
+          git -C sdk-download sparse-checkout set iPhoneOS16.5.sdk
+          mkdir -p "$THEOS/sdks" "$THEOS/lib/iphone/rootless"
+          cp -R sdk-download/iPhoneOS16.5.sdk "$THEOS/sdks/"
+          ./theos-jailed/install
+      - name: Compile all plugins without the private IPA
+        working-directory: main
+        run: |
+          set -o pipefail
+          make all THEOS_PACKAGE_SCHEME=rootless FINALPACKAGE=1 YOUTUBE_VERSION=21.43.5 2>&1 | tee "$RUNNER_TEMP/build.log"
+      - name: Collect compiled replacement libraries
+        working-directory: main
+        run: |
+          mkdir -p compiled-plugins
+          for name in iSponsorBlock DontEatMyContent YTVideoOverlay YouQuality YouSpeed; do
+            test -f ".theos/obj/$name.dylib"
+            cp ".theos/obj/$name.dylib" compiled-plugins/
+            file "compiled-plugins/$name.dylib"
+            otool -L "compiled-plugins/$name.dylib"
+          done
+          shasum -a 256 compiled-plugins/*.dylib > compiled-plugins/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compatibility-results
+          path: |
+            main/compiled-plugins/
+            ${{ runner.temp }}/marker-regression/results.json
+            ${{ runner.temp }}/build.log
+          if-no-files-found: warn
+          retention-days: 3
