@@ -29,6 +29,7 @@ no public release containing the IPA is created by this workflow.
 - Replace retired macos-13 runner with macos-15.
 - Remove placeholder uYou download URL; use the committed upstream uYou 3.0.4 deb.
 - Remove nonexistent YoutubeSpeed.dylib from the injection list.
+- Quote the optional uYou URL to fix an upstream empty-variable shell syntax error.
 - Pass YouTube version to make instead of modifying Makefile by line number.
 - Fetch the exact hash-checked input from a separate private repository.
 - Check main-executable encryption flags, embedded dependencies, and injection.
@@ -39,6 +40,18 @@ no public release containing the IPA is created by this workflow.
 Local input metadata: YouTube 21.43.5, minimum iOS 17.0, cryptid=0.
 SHA256: 9399201c85b5ec7747ac12870678abc938251470a5ea8476e8c9c9caa18e58eb
 
-Cloud compilation and device testing are pending. Static checks do not establish
-that runtime hooks match YouTube 21.43.5. Playback, sign-in, ad removal, Shorts,
-background audio, and settings must be checked on the target iPhone.
+Cloud compilation and output static verification succeeded on 2026-10-29:
+https://github.com/xu-68/youtube-u/actions/runs/40882788915
+
+Build commit: bcc17b6 (subsequent changes only document the result).
+The public macos-15 job completed in 8 minutes 5 seconds. The output contains
+uYou.dylib, uYouPlus.dylib, and YouTubeX.dylib, with main-executable load commands
+and all @rpath dependencies present. The main executable retains cryptid=0.
+
+The temporary INPUT_TOKEN secret is removed after delivery; a future build needs
+its input read credential configured again. No p12 or provisioning profile was
+provided to GitHub.
+
+Device testing is pending. Static checks do not establish that runtime hooks
+match YouTube 21.43.5. Playback, sign-in, ad removal, Shorts, background audio,
+and settings must be checked on the target iPhone.
